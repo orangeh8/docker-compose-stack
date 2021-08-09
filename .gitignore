@@ -4,4 +4,5 @@ zk-multiple-kafka-single/*
 zk-multiple-kafka-multiple/*
 zk-multiple-kafka-multiple-schema-registry/*
 full-stack/*
+all-stack/*
 .idea/
