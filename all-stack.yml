@@ -56,3 +56,22 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: secret
     volumes:
       - ./all-stack/mongo1/data:/data/db
+
+  fastdfs:
+    image: annoak/fastdfs:latest
+    container_name: my-fastdfs
+    environment:
+      - TZ=Asia/Shanghai
+      - NGINX_PORT=8888
+      - FDFS_PORT=22122
+      # - HOST_IP=192.168.198.107
+      # - NET_VAR=eth0
+    volumes:
+      - ./all-stack/fdfs:/var/local/fdfs
+    ports:
+      - "8888:8888"
+      - "22122:22122"
+    # 把root权限带进去
+    # privileged: true
+    # network_mode: "host"
+    # restart: always
