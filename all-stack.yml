@@ -37,29 +37,29 @@ services:
     depends_on:
       - zoo1
 
-  redis1:
+  redis:
     image: redis
     command: redis-server --requirepass mypassword
-    hostname: redis1
+    hostname: redis
     ports:
       - "6379:6379"
     volumes:
-      - ./all-stack/redis1/data:/data
+      - ./all-stack/redis/data:/data
 
-  mongo1:
+  mongo:
     image: mongo
-    hostname: mongo1
+    hostname: mongo
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongoadmin
       MONGO_INITDB_ROOT_PASSWORD: secret
     volumes:
-      - ./all-stack/mongo1/data:/data/db
+      - ./all-stack/mongo/data:/data/db
 
   fastdfs:
     image: annoak/fastdfs:latest
-    container_name: my-fastdfs
+    container_name: fastdfs
     environment:
       - TZ=Asia/Shanghai
       - NGINX_PORT=8888
@@ -67,7 +67,7 @@ services:
       # - HOST_IP=192.168.198.107
       # - NET_VAR=eth0
     volumes:
-      - ./all-stack/fdfs:/var/local/fdfs
+      - ./all-stack/fastdfs:/var/local/fdfs
     ports:
       - "8888:8888"
       - "22122:22122"
@@ -75,3 +75,13 @@ services:
     # privileged: true
     # network_mode: "host"
     # restart: always
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./all-stack/nginx/templates:/etc/nginx/templates
+      - ./all-stack/nginx/html:/usr/share/nginx/html
+    ports:
+      - "8080:80"
+    environment:
+      - NGINX_PORT=80
