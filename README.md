@@ -70,7 +70,7 @@ If you want to have three brokers and experiment with kafka replication / fault-
 
 Run with:
 ```
-docker-compose -f zk-single-kafka-multiple.yml up
+docker-compose -f zk-single-kafka-multiple.yml up -d
 docker-compose -f zk-single-kafka-multiple.yml down
 ```
 
