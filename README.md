@@ -56,7 +56,7 @@ This configuration fits most development requirements.
 
 Run with:
 ```
-docker-compose -f zk-single-kafka-single.yml up
+docker-compose -f zk-single-kafka-single.yml up -d
 docker-compose -f zk-single-kafka-single.yml down
 ```
 
