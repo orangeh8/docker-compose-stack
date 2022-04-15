@@ -1,0 +1,81 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: logstash-config
+  namespace: xcxu
+  labels:
+    k8s-app: logstash
+data:
+  config: |-
+    http.host: "0.0.0.0"
+  pipeline: |-
+    input {
+      beats {
+        port => 5044
+      }
+
+      tcp {
+        port => 5000
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => "es:9200"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: xcxu
+spec:
+  selector:
+    matchLabels:
+      app: logstash
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+        - name: logstash
+          image: >-
+            docker.elastic.co/logstash/logstash:7.12.1
+          ports:
+            - containerPort: 5044
+            - containerPort: 5000
+            - containerPort: 9600
+          env:
+            - name: ELASTICSEARCH_URL
+              value: http://es:9200
+          volumeMounts:
+            - name: logstash-config
+              readOnly: true
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: config
+            - name: logstash-config
+              readOnly: true
+              mountPath: /usr/share/logstash/pipeline/logstash.conf
+              subPath: pipeline
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+            defaultMode: 420
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: logstash
+  namespace: xcxu
+  labels:
+    app: logstash
+spec:
+  ports:
+    - protocol: TCP
+      port: 5601
+      targetPort: 5601
+  selector:
+    app: logstash
