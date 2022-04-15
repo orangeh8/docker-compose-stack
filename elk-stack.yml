@@ -1,4 +1,4 @@
-version: '2.2'
+version: "2.2"
 services:
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
@@ -73,6 +73,27 @@ services:
       ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
     networks:
       - elastic
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.12.1
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: -Xmx256m -Xms256m
+      # LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    networks:
+      - elastic
+    depends_on:
+      - es01
+      - es02
+      - es03
 
 volumes:
   data01:
