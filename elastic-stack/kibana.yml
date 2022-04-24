@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kibana
-  namespace: xcxu
 spec:
   selector:
     matchLabels:
@@ -21,15 +20,14 @@ spec:
             - containerPort: 5601
           env:
             - name: ELASTICSEARCH_URL
-              value: http://es:9200
+              value: http://elasticsearch-0.es.default.svc.cluster.local:9200
             - name: ELASTICSEARCH_HOSTS
-              value: '["http://es:9200"]'
+              value: '["http://elasticsearch-0.es.default.svc.cluster.local:9200","http://elasticsearch-1.es.default.svc.cluster.local:9200","http://elasticsearch-2.es.default.svc.cluster.local:9200"]'
 ---
 kind: Service
 apiVersion: v1
 metadata:
   name: kibana
-  namespace: xcxu
   labels:
     app: kibana
 spec:
