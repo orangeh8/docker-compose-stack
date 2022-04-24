@@ -23,6 +23,16 @@ spec:
               value: http://elasticsearch-0.es.default.svc.cluster.local:9200
             - name: ELASTICSEARCH_HOSTS
               value: '["http://elasticsearch-0.es.default.svc.cluster.local:9200","http://elasticsearch-1.es.default.svc.cluster.local:9200","http://elasticsearch-2.es.default.svc.cluster.local:9200"]'
+          volumeMounts:
+            - name: kibana-config
+              readOnly: true
+              mountPath: /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+      volumes:
+        - name: kibana-config
+          configMap:
+            name: kibana.yml
+            defaultMode: 420
 ---
 kind: Service
 apiVersion: v1

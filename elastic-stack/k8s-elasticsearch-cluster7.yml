@@ -92,6 +92,15 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /usr/share/elasticsearch/data
+            # - name: elasticsearch-config
+            #   readOnly: true
+            #   mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+            #   subPath: elasticsearch.yml
+      volumes:
+        - name: elasticsearch-config
+          configMap:
+            name: elasticsearch.yml
+            defaultMode: 420
   volumeClaimTemplates:
     - metadata:
         name: data
