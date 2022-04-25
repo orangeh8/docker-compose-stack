@@ -22,7 +22,7 @@ spec:
             - containerPort: 9600
           env:
             - name: ELASTICSEARCH_URL
-              value: http://es:9200
+              value: http://elasticsearch:9200
           volumeMounts:
             - name: logstash-config
               readOnly: true
@@ -49,15 +49,17 @@ metadata:
   labels:
     app: logstash
 spec:
+  type: NodePort
   ports:
     - protocol: TCP
       port: 5044
       targetPort: 5044
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
-    - protocol: TCP
-      port: 9600
-      targetPort: 9600
+      nodePort: 32663
+    # - protocol: TCP
+    #   port: 5000
+    #   targetPort: 5000
+    # - protocol: TCP
+    #   port: 9600
+    #   targetPort: 9600
   selector:
     app: logstash
