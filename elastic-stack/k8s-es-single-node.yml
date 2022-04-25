@@ -1,4 +1,14 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch.yml
+data:
+  elasticsearch.yml: |
+    cluster.name: "docker-cluster"
+    network.host: 0.0.0.0
+    xpack.security.enabled: true
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: elasticsearch
@@ -108,3 +118,162 @@ spec:
         resources:
           requests:
             storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana.yml
+data:
+  kibana.yml: |
+    server.name: kibana
+    server.host: "0"
+    elasticsearch.username: "kibana_system"
+    elasticsearch.password: "changeme" # 密码需修改真实密码
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+spec:
+  selector:
+    matchLabels:
+      app: kibana
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          image: >-
+            docker.elastic.co/kibana/kibana:7.12.1
+          ports:
+            - containerPort: 5601
+          env:
+            - name: ELASTICSEARCH_URL
+              value: http://elasticsearch:9200
+            - name: ELASTICSEARCH_HOSTS
+              value: '["http://elasticsearch:9200"]'
+          volumeMounts:
+            - name: kibana-config
+              readOnly: true
+              mountPath: /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+      volumes:
+        - name: kibana-config
+          configMap:
+            name: kibana.yml
+            defaultMode: 420
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+spec:
+  ports:
+    - protocol: TCP
+      port: 5601
+      targetPort: 5601
+  selector:
+    app: kibana
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash.conf
+data:
+  logstash.conf: |-
+    input {
+      beats {
+        port => 5000
+      }
+
+      tcp {
+        port => 5044
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => "elasticsearch:9200"
+        index => applog
+        user => logstash_internal
+        password => 'x-pack-test-password' #密码需修改真实密码
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash.yml
+data:
+  logstash.yml: |-
+    http.host: "0.0.0.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+spec:
+  selector:
+    matchLabels:
+      app: logstash
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+        - name: logstash
+          image: >-
+            docker.elastic.co/logstash/logstash:7.12.1
+          ports:
+            - containerPort: 5044
+            - containerPort: 5000
+            - containerPort: 9600
+          env:
+            - name: ELASTICSEARCH_URL
+              value: http://elasticsearch:9200
+          volumeMounts:
+            - name: logstash-config
+              readOnly: true
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: logstash-pipline-config
+              readOnly: true
+              mountPath: /usr/share/logstash/pipeline/logstash.conf
+              subPath: logstash.conf
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: logstash.yml
+            defaultMode: 420
+        - name: logstash-pipline-config
+          configMap:
+            name: logstash.conf
+            defaultMode: 420
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: logstash
+  labels:
+    app: logstash
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 5044
+      targetPort: 5044
+      nodePort: 32664
+    # - protocol: TCP
+    #   port: 5000
+    #   targetPort: 5000
+    # - protocol: TCP
+    #   port: 9600
+    #   targetPort: 9600
+  selector:
+    app: logstash
