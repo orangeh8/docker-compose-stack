@@ -51,7 +51,13 @@ metadata:
 spec:
   ports:
     - protocol: TCP
-      port: 5601
-      targetPort: 5601
+      port: 5044
+      targetPort: 5044
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+    - protocol: TCP
+      port: 9600
+      targetPort: 9600
   selector:
     app: logstash
