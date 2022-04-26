@@ -3,56 +3,47 @@ apiVersion: v1
 metadata:
   name: filebeat-config
   labels:
-    k8s-app: filebeat
+    app: filebeat
 data:
   filebeat.yml: |-
     filebeat.inputs:
     - type: log
-      enabled: true
-      paths:
-        - /usr/app/logs/*.log
-    filebeat.config.modules:
-      path: ${path.config}/modules.d/*.yml
-      reload.enabled: false
-    setup.template.settings:
-      index.number_of_shards: 1
-    fields:
-      appname: ${POD_NAME}
-    setup.kibana:
+      paths: ["/usr/app/logs/*.log"]
     output.logstash:
-      hosts: ["logstash:5000"]
-    processors:
-      - add_host_metadata: ~
-      - add_cloud_metadata: ~
-      - add_docker_metadata: ~
-      - add_kubernetes_metadata: ~
+      hosts: ["logstash.elastic-stack.svc.cluster.local:5000"]
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: filebeat
   labels:
-    k8s-app: filebeat
+    app: filebeat
 spec:
   replicas: 1
   selector:
     matchLabels:
-      k8s-app: filebeat
+      app: filebeat
   template:
     metadata:
-      creationTimestamp: null
       labels:
-        k8s-app: filebeat
+        app: filebeat
     spec:
+      serviceAccount: filebeat
       containers:
-        - resources:
+        - image: docker.elastic.co/beats/filebeat:7.12.1
+          args:
+            - "-c"
+            - /etc/filebeat.yml
+            - "-e"
+          securityContext:
+            privileged: true
+          name: filebeat
+          resources:
             limits:
               memory: 200Mi
             requests:
               cpu: 100m
               memory: 100Mi
-          terminationMessagePath: /dev/termination-log
-          name: filebeat
           env:
             - name: POD_IP
               valueFrom:
@@ -64,7 +55,6 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.name
-          imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config
               readOnly: true
@@ -72,21 +62,17 @@ spec:
               subPath: filebeat.yml
             - name: app-logs
               mountPath: /usr/app/logs
-          image: "docker.elastic.co/beats/filebeat:7.5.1"
-          args:
-            - "-c"
-            - /etc/filebeat.yml
-            - "-e"
-        - name: nginx
-          image: nginx
+        - name: tomcat
+          image: tomcat:latest
+          securityContext:
+            privileged: true
           ports:
             - containerPort: 8080
               protocol: TCP
           resources: {}
           volumeMounts:
             - name: app-logs
-              mountPath: /var/log/nginx
-      serviceAccount: filebeat
+              mountPath: /usr/local/tomcat/logs
       volumes:
         - name: config
           configMap:
