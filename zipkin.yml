@@ -18,3 +18,17 @@ spec:
           ports:
             - containerPort: 9411
               protocol: TCP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: zipkin
+  labels:
+    app: zipkin
+spec:
+  ports:
+    - protocol: TCP
+      port: 9411
+      targetPort: 9411
+  selector:
+    app: zipkin
