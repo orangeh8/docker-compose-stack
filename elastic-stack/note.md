@@ -27,15 +27,15 @@ xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
 
 ```
 
-POST \_security/role/logstash_writer
+POST _security/role/logstash_writer
 {
-"cluster": ["manage_index_templates", "monitor", "manage_ilm"],
-"indices": [
-{
-"names": [ "logstash-*","applog" ],
-"privileges": ["write","create","create_index","manage","manage_ilm"]
-}
-]
+  "cluster": ["manage_index_templates", "monitor", "manage_ilm"], 
+  "indices": [
+    {
+      "names": [ "logstash-*","applog" ], 
+      "privileges": ["write","create","create_index","manage","manage_ilm"]  
+    }
+  ]
 }
 
 ```
@@ -44,11 +44,11 @@ POST \_security/role/logstash_writer
 
 ```
 
-POST \_security/user/logstash_internal
+POST _security/user/logstash_internal
 {
-"password" : "x-pack-test-password",
-"roles" : [ "logstash_writer"],
-"full_name" : "Internal Logstash User"
+  "password" : "x-pack-test-password",
+  "roles" : [ "logstash_writer"],
+  "full_name" : "Internal Logstash User"
 }
 
 ```
@@ -56,28 +56,23 @@ POST \_security/user/logstash_internal
 - 添加配置
 
 ```
+    input {
+      beats {
+        port => 5000
+      }
 
-input {
-elasticsearch {
-...
-user => logstash_internal
-password => x-pack-test-password
-}
-}
-filter {
-elasticsearch {
-...
-user => logstash_internal
-password => x-pack-test-password
-}
-}
-output {
-elasticsearch {
-...
-user => logstash_internal
-password => x-pack-test-password
-}
-}
+      tcp {
+        port => 5044
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => "elasticsearch:9200"
+        index => applog
+        user => logstash_internal
+        password => 'x-pack-test-password' #密码需修改真实密码
+      }
+    }
 
 ```
 
