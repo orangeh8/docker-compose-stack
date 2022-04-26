@@ -203,13 +203,25 @@ data:
         port => 5044
       }
     }
+
+    filter {
+      if [log_type] in [ "test", "staging" ] {
+          mutate { add_field => { "[@metadata][target_index]" => "applog-test-%{+YYYY.MM}" } }
+      } else if [log_type] == "production" {
+          mutate { add_field => { "[@metadata][target_index]" => "applog-prod-%{+YYYY.MM.dd}" } }
+      } else {
+          mutate { add_field => { "[@metadata][target_index]" => "applog-%{+YYYY}" } }
+      }
+    }
+
     output {
       elasticsearch {
         hosts => "elasticsearch:9200"
-        index => applog
+        index => "%{[@metadata][target_index]}"
         user => logstash_internal
         password => 'x-pack-test-password' #密码需修改真实密码
       }
+      stdout { codec => rubydebug }
     }
   logstash.yml: |-
     http.host: "0.0.0.0"
