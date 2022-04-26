@@ -23,6 +23,12 @@ data:
     cluster.name: "docker-cluster"
     network.host: 0.0.0.0
     xpack.security.enabled: true
+
+    xpack.security.transport.ssl.enabled: true
+    xpack.security.transport.ssl.verification_mode: certificate 
+    xpack.security.transport.ssl.client_authentication: required
+    xpack.security.transport.ssl.keystore.path: ../data/nodes/elastic-certificates.p12
+    xpack.security.transport.ssl.truststore.path: ../data/nodes/elastic-certificates.p12
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -32,7 +38,7 @@ metadata:
     app: elasticsearch
 spec:
   serviceName: elasticsearch
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: elasticsearch
@@ -92,8 +98,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: discovery.type
-              value: "single-node"
+            - name: discovery.seed_hosts
+              value: "elasticsearch-0.elasticsearch.elastic-stack.svc.cluster.local,elasticsearch-1.elasticsearch.elastic-stack.svc.cluster.local,elasticsearch-2.elasticsearch.elastic-stack.svc.cluster.local"
+            - name: cluster.initial_master_nodes
+              value: "elasticsearch-0,elasticsearch-1,elasticsearch-2"
             - name: ES_JAVA_OPTS
               value: -Xms4g -Xmx4g
           volumeMounts:
