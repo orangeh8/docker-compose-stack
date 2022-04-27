@@ -62,17 +62,12 @@ spec:
               subPath: filebeat.yml
             - name: app-logs
               mountPath: /usr/app/logs
-        - name: tomcat
-          image: tomcat:latest
-          securityContext:
-            privileged: true
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-          resources: {}
+        - name: generate-log
+          image: busybox
+          command: ["sh", "-c", "while true; do date >> /workdir/date.log; sleep 2; done;"]
           volumeMounts:
-            - name: app-logs
-              mountPath: /usr/local/tomcat/logs
+            - mountPath: /workdir
+              name: app-logs
       volumes:
         - name: config
           configMap:

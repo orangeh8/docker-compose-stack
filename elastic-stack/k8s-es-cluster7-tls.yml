@@ -27,8 +27,8 @@ data:
     xpack.security.transport.ssl.enabled: true
     xpack.security.transport.ssl.verification_mode: certificate 
     xpack.security.transport.ssl.client_authentication: required
-    xpack.security.transport.ssl.keystore.path: ../data/nodes/elastic-certificates.p12
-    xpack.security.transport.ssl.truststore.path: ../data/nodes/elastic-certificates.p12
+    xpack.security.transport.ssl.keystore.path: ../data/elastic-certificates.p12
+    xpack.security.transport.ssl.truststore.path: ../data/elastic-certificates.p12
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -136,7 +136,7 @@ data:
     server.name: kibana
     server.host: "0"
     elasticsearch.username: "kibana_system"
-    elasticsearch.password: "changePassword" # 密码需修改真实密码
+    elasticsearch.password: "Xiaokouchangkai" # 密码需修改真实密码
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -196,11 +196,12 @@ data:
   logstash.conf: |-
     input {
       beats {
-        port => 5000
+        port => 5044
       }
 
       tcp {
-        port => 5044
+        port => 5000
+        codec => json
       }
     }
 
@@ -212,16 +213,29 @@ data:
       } else {
           mutate { add_field => { "[@metadata][target_index]" => "applog-%{+YYYY}" } }
       }
+      
+      if [agent][type] == "filebeat" {
+          mutate { rename => { "host.name" => "host"}}
+      }
     }
 
     output {
-      elasticsearch {
-        hosts => "elasticsearch:9200"
-        index => "%{[@metadata][target_index]}"
-        user => logstash_internal
-        password => 'x-pack-test-password' #密码需修改真实密码
+      stdout { codec => rubydebug }      
+      if [agent][type] == "filebeat" { 
+        elasticsearch {
+          hosts => "elasticsearch:9200"
+          index => "applog-filebeat"
+          user => logstash_internal
+          password => 'x-pack-test-password' #密码需修改真实密码
+        }        
+      } else {
+        elasticsearch {
+          hosts => "elasticsearch:9200"
+          index => "%{[@metadata][target_index]}"
+          user => logstash_internal
+          password => 'x-pack-test-password' #密码需修改真实密码
+        }
       }
-      stdout { codec => rubydebug }
     }
   logstash.yml: |-
     http.host: "0.0.0.0"
@@ -273,14 +287,14 @@ metadata:
   labels:
     app: logstash
 spec:
-  # type: NodePort
+  type: NodePort
   ports:
-    - name: tcp
+    - name: beats
       protocol: TCP
       port: 5044
       targetPort: 5044
-      # nodePort: 32663
-    - name: beats
+      nodePort: 32663
+    - name: tcp
       protocol: TCP
       port: 5000
       targetPort: 5000
