@@ -201,7 +201,6 @@ data:
 
       tcp {
         port => 5000
-        codec => json
       }
     }
 
@@ -220,21 +219,12 @@ data:
     }
 
     output {
-      stdout { codec => rubydebug }      
-      if [agent][type] == "filebeat" { 
-        elasticsearch {
-          hosts => "elasticsearch:9200"
-          index => "applog-filebeat"
-          user => logstash_internal
-          password => 'x-pack-test-password' #密码需修改真实密码
-        }        
-      } else {
-        elasticsearch {
-          hosts => "elasticsearch:9200"
-          index => "%{[@metadata][target_index]}"
-          user => logstash_internal
-          password => 'x-pack-test-password' #密码需修改真实密码
-        }
+      stdout { codec => rubydebug }
+      elasticsearch {
+        hosts => "elasticsearch:9200"
+        index => "%{[@metadata][target_index]}"
+        user => logstash_internal
+        password => 'x-pack-test-password' #密码需修改真实密码
       }
     }
   logstash.yml: |-
