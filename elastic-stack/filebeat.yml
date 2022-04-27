@@ -28,15 +28,15 @@ spec:
       labels:
         app: filebeat
     spec:
-      serviceAccount: filebeat
       containers:
         - image: docker.elastic.co/beats/filebeat:7.12.1
+          serviceAccount: filebeat
           args:
             - "-c"
             - /etc/filebeat.yml
             - "-e"
-          securityContext:
-            privileged: true
+          # securityContext:
+          #   privileged: true
           name: filebeat
           resources:
             limits:
