@@ -215,7 +215,7 @@ data:
       }
       
       if [agent][type] == "filebeat" {
-          mutate { rename => { "host.name" => "host"}}
+        mutate { rename => { "[host][name]" => "host"}}
       }
     }
 
