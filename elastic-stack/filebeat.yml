@@ -10,7 +10,7 @@ data:
     - type: log
       paths: ["/usr/app/logs/*.log"]
     output.logstash:
-      hosts: ["logstash.elastic-stack.svc.cluster.local:5000"]
+      hosts: ["logstash.elastic-stack.svc.cluster.local:5044"]
 ---
 kind: Deployment
 apiVersion: apps/v1
