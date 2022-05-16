@@ -1,13 +1,17 @@
 - 新建 namespace elk，并添加权限
 
 ```
-oc adm policy add-scc-to-user privileged -z default -n elk
+oc adm policy add-scc-to-user privileged -z default -n elastic-stack
 ```
 
 - tls 配置
 
 ```
 参考网址 ：https://www.elastic.co/guide/en/elasticsearch/reference/7.17/security-basic-setup.html
+
+# 创建密码，两种方式生成密码
+./bin/elasticsearch-setup-passwords auto # 自动生成密码
+./bin/elasticsearch-setup-passwords interactive # 手动设置密码
 
 # 生成 CA
 ./bin/elasticsearch-certutil ca
@@ -29,11 +33,11 @@ xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
 
 POST _security/role/logstash_writer
 {
-  "cluster": ["manage_index_templates", "monitor", "manage_ilm"], 
+  "cluster": ["manage_index_templates", "monitor", "manage_ilm"],
   "indices": [
     {
-      "names": [ "logstash-*","applog" ], 
-      "privileges": ["write","create","create_index","manage","manage_ilm"]  
+      "names": [ "logstash-*","applog-*" ],
+      "privileges": ["write","create","create_index","manage","manage_ilm"]
     }
   ]
 }
@@ -73,13 +77,5 @@ POST _security/user/logstash_internal
         password => 'x-pack-test-password' #密码需修改真实密码
       }
     }
-
-```
-
-```
-
-```
-
-```
 
 ```
