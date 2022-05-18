@@ -11,6 +11,16 @@ data:
       paths: ["/usr/app/logs/*.log"]
     output.logstash:
       hosts: ["logstash.elastic-stack.svc.cluster.local:5044"]
+    processors:
+      - add_fields:
+          target: project
+          fields:
+            name: myproject
+            id: '574734885120952459'
+      - add_fields:
+          target: '@metadata'
+          fields:
+            op_type: "index"      
 ---
 kind: Deployment
 apiVersion: apps/v1
