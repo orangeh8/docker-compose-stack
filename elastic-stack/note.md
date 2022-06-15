@@ -79,3 +79,10 @@ POST _security/user/logstash_internal
     }
 
 ```
+
+- 更新 image
+
+```
+kubectl set image deployment/filebeat filebeat=docker.elastic.co/beats/filebeat:7.12.1
+kubectl rollout restart deployment/filebeat
+```
