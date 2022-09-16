@@ -1,3 +1,9 @@
+- 配置 nfs
+
+```
+https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+```
+
 - 新建 namespace elk，并添加权限
 
 ```
@@ -8,6 +14,8 @@ oc adm policy add-scc-to-user privileged -z default -n elastic-stack
 
 ```
 参考网址 ：https://www.elastic.co/guide/en/elasticsearch/reference/7.17/security-basic-setup.html
+
+# 首先，修改集群实例为1，然后配置密钥
 
 # 创建密码，两种方式生成密码
 ./bin/elasticsearch-setup-passwords auto # 自动生成密码
