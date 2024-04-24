@@ -1,3 +1,7 @@
+- 单节点设置密码
+https://www.elastic.co/guide/en/elasticsearch/reference/7.17/security-minimal-setup.html#security-create-builtin-users
+
+
 - 配置 nfs
 
 ```
